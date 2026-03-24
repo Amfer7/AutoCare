@@ -1,0 +1,55 @@
+﻿# Maven
+/target/
+!.mvn/wrapper/maven-wrapper.jar
+
+# Java
+*.class
+*.log
+
+# Spring Boot
+*.pid
+*.seed
+*.pid.lock
+
+# IDE - IntelliJ
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+
+# IDE - VS Code
+.vscode/
+
+# Eclipse/STS
+.apt_generated/
+.classpath
+.factorypath
+.project
+.settings/
+.springBeans
+.sts4-cache/
+
+# NetBeans
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Env/local config
+.env
+.env.*
+
+# Logs
+logs/
+*.tmp
+
+# Optional: Maven Wrapper binaries/scripts if you don't use wrapper
+# .mvn/
+# mvnw
+# mvnw.cmd
