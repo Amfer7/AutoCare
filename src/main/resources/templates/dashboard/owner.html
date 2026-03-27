@@ -1,11 +1,168 @@
-﻿<!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>owner</title>
-</head>
-<body>
-    <h1>owner</h1>
-</body>
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/base}">
+
+<th:block layout:fragment="page-title">Dashboard</th:block>
+<th:block layout:fragment="page-subtitle">
+  Good to see you, <span th:text="${owner.fullName}">Owner</span>
+</th:block>
+
+<th:block layout:fragment="topbar-actions">
+  <a th:href="@{/vehicle/add}" class="btn btn-primary btn-sm">Add Vehicle</a>
+</th:block>
+
+<th:block layout:fragment="content">
+
+  <div th:if="${successMsg}" class="alert alert-success">
+    <span class="alert-icon">OK</span><span th:text="${successMsg}"></span>
+  </div>
+
+  <div class="grid grid-4" style="margin-bottom:28px;">
+    <div class="stat-card amber animate-in">
+      <div class="stat-icon amber">V</div>
+      <div class="stat-value" th:attr="data-count=${vehicleCount}" th:text="${vehicleCount}">0</div>
+      <div class="stat-label">Vehicles</div>
+    </div>
+    <div class="stat-card red animate-in animate-in-delay-1">
+      <div class="stat-icon red">O</div>
+      <div class="stat-value" th:attr="data-count=${overdueCount}" th:text="${overdueCount}">0</div>
+      <div class="stat-label">Overdue</div>
+    </div>
+    <div class="stat-card blue animate-in animate-in-delay-2">
+      <div class="stat-icon blue">P</div>
+      <div class="stat-value" th:attr="data-count=${pendingCount}" th:text="${pendingCount}">0</div>
+      <div class="stat-label">Pending Requests</div>
+    </div>
+    <div class="stat-card green animate-in animate-in-delay-3">
+      <div class="stat-icon green">B</div>
+      <div class="stat-value" th:attr="data-count=${unpaidCount}" th:text="${unpaidCount}">0</div>
+      <div class="stat-label">Unpaid Bills</div>
+    </div>
+  </div>
+
+  <div class="grid grid-2" style="margin-bottom:28px;">
+    <div class="card animate-in animate-in-delay-1">
+      <div class="card-header">
+        <div>
+          <div class="card-title">My Vehicles</div>
+          <div class="card-subtitle" th:text="${vehicleCount} + ' registered'"></div>
+        </div>
+        <a th:href="@{/vehicle/list}" class="btn btn-ghost btn-sm">View All</a>
+      </div>
+
+      <div th:if="${vehicles.empty}" class="empty-state" style="padding:32px 0;">
+        <div class="empty-title">No vehicles yet</div>
+        <div class="empty-desc">Add your first vehicle to get started.</div>
+        <a th:href="@{/vehicle/add}" class="btn btn-primary btn-sm">Add Vehicle</a>
+      </div>
+
+      <th:block th:each="vehicle, iter : ${vehicles}">
+        <div th:if="${iter.index < 3}"
+             style="display:flex; align-items:center; justify-content:space-between; padding:12px; border-radius:var(--radius-md); margin-bottom:8px; background:var(--slate-900); border:1px solid rgba(255,255,255,0.05);">
+          <div>
+            <div style="font-weight:500;color:white;font-size:13.5px;" th:text="${vehicle.displayName}"></div>
+            <div class="vehicle-plate" style="font-size:11px;padding:2px 8px;" th:text="${vehicle.licensePlate}"></div>
+          </div>
+          <span th:switch="${vehicle.state.name()}">
+            <span th:case="'ACTIVE'" class="state-pill state-active">Active</span>
+            <span th:case="'NEEDS_SERVICE'" class="state-pill state-needs-service">Needs Service</span>
+            <span th:case="'UNDER_SERVICE'" class="state-pill state-under-service">Under Service</span>
+          </span>
+        </div>
+      </th:block>
+    </div>
+
+    <div class="card animate-in animate-in-delay-2">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Reminders</div>
+          <div class="card-subtitle">
+            <span th:text="${overdueCount}" class="text-red"></span> overdue,
+            <span th:text="${dueSoonCount}" class="text-amber"></span> due soon
+          </div>
+        </div>
+        <a th:href="@{/reminder/list}" class="btn btn-ghost btn-sm">View All</a>
+      </div>
+
+      <div th:if="${reminders.empty}" class="empty-state" style="padding:32px 0;">
+        <div class="empty-title">No reminders</div>
+        <div class="empty-desc">Add a vehicle to get automatic maintenance reminders.</div>
+      </div>
+
+      <th:block th:each="reminder, iter : ${reminders}">
+        <div th:if="${iter.index < 4 and reminder.state.name() != 'COMPLETED'}"
+             style="display:flex; align-items:center; justify-content:space-between; padding:11px 12px; border-radius:var(--radius-md); background:var(--slate-900); margin-bottom:8px; border:1px solid rgba(255,255,255,0.05);">
+          <div>
+            <div style="font-size:13px; font-weight:500; color:var(--slate-200);" th:text="${reminder.vehicle.displayName}"></div>
+            <div style="font-size:11.5px; color:var(--slate-500); margin-top:2px;">
+              Due: <span th:text="${#temporals.format(reminder.dueDate, 'dd MMM yyyy')}"></span>
+              - <span th:text="${reminder.dueMileage}"></span> km
+            </div>
+          </div>
+          <span th:class="'badge ' + ${reminder.badgeClass}">
+            <span class="badge-dot"></span>
+            <span th:text="${reminder.urgencyLabel}"></span>
+          </span>
+        </div>
+      </th:block>
+    </div>
+  </div>
+
+  <div class="card animate-in animate-in-delay-3">
+    <div class="card-header">
+      <div>
+        <div class="card-title">Recent Service Requests</div>
+        <div class="card-subtitle" th:text="${requests.size()} + ' total'"></div>
+      </div>
+      <div style="display:flex; gap:8px;">
+        <a th:href="@{/service/create}" class="btn btn-primary btn-sm">New Request</a>
+        <a th:href="@{/service/list}" class="btn btn-ghost btn-sm">View All</a>
+      </div>
+    </div>
+
+    <div th:if="${requests.empty}" class="empty-state">
+      <div class="empty-title">No service requests</div>
+      <div class="empty-desc">Raise a service request whenever your vehicle needs attention.</div>
+    </div>
+
+    <div th:unless="${requests.empty}" class="table-container">
+      <table>
+        <thead>
+        <tr>
+          <th>#</th>
+          <th>Vehicle</th>
+          <th>Description</th>
+          <th>Requested</th>
+          <th>Status</th>
+          <th></th>
+        </tr>
+        </thead>
+        <tbody>
+        <th:block th:each="req, iter : ${requests}">
+          <tr th:if="${iter.index < 5}">
+            <td class="text-muted" th:text="${req.id}"></td>
+            <td>
+              <div style="font-weight:500;color:white;" th:text="${req.vehicle.displayName}"></div>
+              <div class="vehicle-plate" style="font-size:11px;padding:1px 6px;" th:text="${req.vehicle.licensePlate}"></div>
+            </td>
+            <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" th:text="${req.description}"></td>
+            <td class="text-muted" th:text="${#temporals.format(req.requestedAt,'dd MMM yyyy')}"></td>
+            <td>
+              <span th:class="'badge ' + ${req.stateBadgeClass}">
+                <span class="badge-dot"></span>
+                <span th:text="${req.state}"></span>
+              </span>
+            </td>
+            <td>
+              <a th:href="@{/service/{id}(id=${req.id})}" class="btn btn-ghost btn-sm">View</a>
+            </td>
+          </tr>
+        </th:block>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</th:block>
 </html>

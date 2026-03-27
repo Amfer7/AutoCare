@@ -1,11 +1,81 @@
-﻿<!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>list</title>
-</head>
-<body>
-    <h1>list</h1>
-</body>
+<!-- ══ VEHICLE LIST ═══════════════════════════════════════════════════════ -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/base}">
+<th:block layout:fragment="page-title">My Vehicles</th:block>
+<th:block layout:fragment="page-subtitle" th:text="${vehicles.size()} + ' vehicles registered'"></th:block>
+<th:block layout:fragment="topbar-actions">
+  <a th:href="@{/vehicle/add}" class="btn btn-primary btn-sm">
+    <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+    </svg>
+    Add Vehicle
+  </a>
+</th:block>
+<th:block layout:fragment="content">
+
+  <div th:if="${successMsg}" class="alert alert-success animate-in">
+    <span class="alert-icon">✓</span><span th:text="${successMsg}"></span>
+  </div>
+
+  <div th:if="${vehicles.empty}" class="empty-state">
+    <span class="empty-icon">🚗</span>
+    <h3 class="empty-title">No vehicles yet</h3>
+    <p class="empty-desc">Register your first vehicle to start tracking maintenance and reminders.</p>
+    <a th:href="@{/vehicle/add}" class="btn btn-primary">Add My First Vehicle</a>
+  </div>
+
+  <div th:unless="${vehicles.empty}" class="grid grid-3">
+    <th:block th:each="vehicle, iter : ${vehicles}">
+      <a th:href="@{/vehicle/{id}(id=${vehicle.id})}" class="vehicle-card animate-in"
+         th:classappend="'animate-in-delay-' + ${iter.index + 1}">
+
+        <div class="vehicle-make" th:text="${vehicle.make}"></div>
+        <div class="vehicle-model" th:text="${vehicle.model + ' ' + vehicle.year}"></div>
+
+        <div class="vehicle-meta">
+          <div class="vehicle-meta-item">
+            🛣️ <strong th:text="${#numbers.formatDecimal(vehicle.currentMileage,1,'COMMA',0,'POINT')}"></strong> km
+          </div>
+          <div class="vehicle-meta-item">
+            ⛽ <span th:text="${vehicle.fuelType ?: 'N/A'}"></span>
+          </div>
+          <div class="vehicle-meta-item">
+            🎨 <span th:text="${vehicle.color}"></span>
+          </div>
+        </div>
+
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <span class="vehicle-plate" th:text="${vehicle.licensePlate}"></span>
+          <span th:switch="${vehicle.state.name()}">
+            <span th:case="'ACTIVE'"        class="state-pill state-active">● Active</span>
+            <span th:case="'NEEDS_SERVICE'" class="state-pill state-needs-service">● Needs Service</span>
+            <span th:case="'UNDER_SERVICE'" class="state-pill state-under-service">● Under Service</span>
+          </span>
+        </div>
+
+        <!-- Active reminder progress -->
+        <th:block th:with="reminder=${vehicleReminders[vehicle.id]}">
+          <div th:if="${reminder != null}" class="reminder-progress">
+            <div class="progress-label">
+              <span>Next service</span>
+              <span th:text="${#temporals.format(reminder.dueDate,'dd MMM yyyy')}"></span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill"
+                   th:classappend="${reminder.state.name().toLowerCase().replace('_','-')}"
+                   th:style="'width:' + ${reminder.state.name() == 'OVERDUE' ? 100 :
+                              reminder.state.name() == 'DUE_SOON' ? 80 :
+                              reminder.state.name() == 'UPCOMING' ? 40 : 100} + '%'">
+              </div>
+            </div>
+          </div>
+        </th:block>
+
+      </a>
+    </th:block>
+  </div>
+
+</th:block>
 </html>

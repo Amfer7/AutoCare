@@ -1,11 +1,271 @@
-﻿<!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>update-request</title>
-</head>
-<body>
-    <h1>update-request</h1>
-</body>
+<!-- ══ SERVICE REQUEST DETAIL / UPDATE ════════════════════════════════════ -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/base}">
+<th:block layout:fragment="page-title" th:text="'Request #' + ${request.id}">Request</th:block>
+<th:block layout:fragment="page-subtitle" th:text="${request.vehicle.displayName}"></th:block>
+<th:block layout:fragment="content">
+
+  <div class="breadcrumb animate-in">
+    <a th:href="@{/service/list}">Requests</a>
+    <span class="sep">/</span>
+    <span class="current" th:text="'#' + ${request.id}"></span>
+  </div>
+
+  <div th:if="${successMsg}" class="alert alert-success animate-in"><span th:text="${successMsg}"></span></div>
+  <div th:if="${errorMsg}"   class="alert alert-error   animate-in"><span th:text="${errorMsg}"></span></div>
+
+  <div class="grid grid-2">
+
+    <!-- Request info -->
+    <div class="card animate-in">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;">
+        <div>
+          <div style="font-family:'Playfair Display',serif;font-size:20px;font-weight:600;color:white;"
+               th:text="${request.vehicle.displayName}"></div>
+          <div style="display:flex;align-items:center;gap:10px;margin-top:6px;">
+            <span class="vehicle-plate" th:text="${request.vehicle.licensePlate}"></span>
+            <span th:class="'badge ' + ${request.stateBadgeClass}">
+              <span class="badge-dot"></span>
+              <span th:text="${request.state}"></span>
+            </span>
+          </div>
+        </div>
+        <div style="font-family:'Playfair Display',serif;font-size:24px;color:var(--slate-700);"
+             th:text="'#' + ${request.id}"></div>
+      </div>
+
+      <div class="detail-grid">
+        <div class="detail-item">
+          <div class="detail-label">Owner</div>
+          <div class="detail-value" th:text="${request.owner.fullName}"></div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">Assigned Staff</div>
+          <div class="detail-value"
+               th:text="${request.assignedStaff?.fullName ?: 'Unassigned'}"></div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">Requested</div>
+          <div class="detail-value"
+               th:text="${#temporals.format(request.requestedAt,'dd MMM yyyy, hh:mm a')}"></div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">Started</div>
+          <div class="detail-value"
+               th:text="${request.startedAt != null ? #temporals.format(request.startedAt,'dd MMM yyyy') : '—'}"></div>
+        </div>
+      </div>
+
+      <div style="margin-top:16px;padding:14px;background:var(--slate-900);
+                  border-radius:var(--radius-md);border:1px solid rgba(255,255,255,0.05);">
+        <div style="font-size:11px;color:var(--slate-500);margin-bottom:6px;">Description</div>
+        <div style="font-size:13.5px;color:var(--slate-200);line-height:1.6;"
+             th:text="${request.description}"></div>
+      </div>
+
+      <!-- Cancellation reason -->
+      <div th:if="${request.cancellationReason != null}"
+           style="margin-top:12px;" class="alert alert-warning">
+        <span class="alert-icon">⚠</span>
+        <span>Cancelled: <span th:text="${request.cancellationReason}"></span></span>
+      </div>
+
+      <!-- Staff actions -->
+      <div sec:authorize="hasRole('STAFF')" style="margin-top:16px;">
+        <div th:if="${request.state.name() == 'PENDING'}">
+
+          <!-- Assign staff -->
+          <div style="margin-bottom:12px;">
+            <form th:action="@{/service/{id}/assign(id=${request.id})}" method="post"
+                  style="display:flex;gap:10px;">
+              <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+              <select name="staffId" class="form-control" style="flex:1;">
+                <option value="">Assign to staff...</option>
+                <option th:each="s : ${staffList}" th:value="${s.id}"
+                        th:text="${s.fullName + (s.specialization != null ? ' · ' + s.specialization : '')}"></option>
+              </select>
+              <button type="submit" class="btn btn-secondary">Assign</button>
+            </form>
+          </div>
+
+          <form th:action="@{/service/{id}/start(id=${request.id})}" method="post" style="display:inline;">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+            <button type="submit" class="btn btn-primary">▶ Start Service</button>
+          </form>
+        </div>
+
+        <!-- Cancel button (PENDING or IN_PROGRESS) -->
+        <div th:if="${request.state.name() != 'COMPLETED' and request.state.name() != 'CANCELLED'}"
+             style="margin-top:10px;">
+          <form th:action="@{/service/{id}/cancel(id=${request.id})}" method="post"
+                style="display:flex;gap:10px;">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+            <input type="text" name="reason" class="form-control" placeholder="Cancellation reason" style="flex:1;"/>
+            <button type="submit" class="btn btn-danger"
+                    onclick="return confirm('Cancel this service request?')">Cancel</button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Owner cancel -->
+      <div sec:authorize="hasRole('OWNER')" style="margin-top:16px;">
+        <div th:if="${request.state.name() == 'PENDING'}">
+          <form th:action="@{/service/{id}/cancel(id=${request.id})}" method="post">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+            <input type="hidden" name="reason" value="Cancelled by owner"/>
+            <button type="submit" class="btn btn-danger btn-sm"
+                    onclick="return confirm('Cancel this service request?')">Cancel Request</button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Completion form (IN_PROGRESS, staff only) -->
+    <div sec:authorize="hasRole('STAFF')"
+         th:if="${request.state.name() == 'IN_PROGRESS'}"
+         class="card animate-in animate-in-delay-1">
+      <div class="card-header">
+        <div class="card-title">Complete Service</div>
+        <div class="card-subtitle">Fill in details to close this request and generate bill</div>
+      </div>
+
+      <form th:action="@{/service/{id}/complete(id=${request.id})}"
+            th:object="${completionDto}" method="post">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+        <div class="form-group">
+          <label class="form-label">Work Performed <span class="required">*</span></label>
+          <textarea th:field="*{workPerformed}" class="form-control"
+                    th:classappend="${#fields.hasErrors('workPerformed')} ? 'is-invalid'"
+                    rows="3" placeholder="Describe all work completed..."></textarea>
+          <div th:if="${#fields.hasErrors('workPerformed')}" class="form-error"
+               th:errors="*{workPerformed}"></div>
+        </div>
+
+        <div class="form-row form-row-2">
+          <div class="form-group">
+            <label class="form-label">Mileage at Service (km) <span class="required">*</span></label>
+            <input type="number" th:field="*{mileageAtService}" class="form-control"
+                   th:classappend="${#fields.hasErrors('mileageAtService')} ? 'is-invalid'"
+                   step="0.1" min="0"/>
+            <div th:if="${#fields.hasErrors('mileageAtService')}" class="form-error"
+                 th:errors="*{mileageAtService}"></div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Parts Replaced</label>
+            <input type="text" th:field="*{partsReplaced}" class="form-control"
+                   placeholder="Oil filter, brake pads..."/>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Technician Notes</label>
+          <textarea th:field="*{technicianNotes}" class="form-control" rows="2"
+                    placeholder="Internal notes..."></textarea>
+        </div>
+
+        <div class="divider"></div>
+        <div class="section-title">Billing</div>
+
+        <div class="form-row form-row-2">
+          <div class="form-group">
+            <label class="form-label">Labour Cost (₹) <span class="required">*</span></label>
+            <input type="number" th:field="*{laborCost}" class="form-control"
+                   th:classappend="${#fields.hasErrors('laborCost')} ? 'is-invalid'"
+                   step="0.01" min="0" placeholder="0.00" id="laborCost"/>
+            <div th:if="${#fields.hasErrors('laborCost')}" class="form-error"
+                 th:errors="*{laborCost}"></div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Parts Cost (₹) <span class="required">*</span></label>
+            <input type="number" th:field="*{partsCost}" class="form-control"
+                   th:classappend="${#fields.hasErrors('partsCost')} ? 'is-invalid'"
+                   step="0.01" min="0" placeholder="0.00" id="partsCost"/>
+            <div th:if="${#fields.hasErrors('partsCost')}" class="form-error"
+                 th:errors="*{partsCost}"></div>
+          </div>
+        </div>
+
+        <!-- Live total preview -->
+        <div style="background:var(--slate-900);border-radius:var(--radius-md);
+                    padding:14px;margin-bottom:20px;border:1px solid rgba(255,255,255,0.06);">
+          <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px;">
+            <span class="text-muted">Subtotal</span>
+            <span id="previewSubtotal">₹0.00</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px;">
+            <span class="text-muted">GST (18%)</span>
+            <span id="previewTax">₹0.00</span>
+          </div>
+          <div class="divider" style="margin:8px 0;"></div>
+          <div style="display:flex;justify-content:space-between;font-size:15px;font-weight:600;">
+            <span style="color:white;">Total</span>
+            <span id="previewTotal" style="color:var(--amber-400);">₹0.00</span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Bill Notes</label>
+          <input type="text" th:field="*{billNotes}" class="form-control" placeholder="Optional notes"/>
+        </div>
+
+        <button type="submit" class="btn btn-success w-full" style="justify-content:center;">
+          ✓ Complete Service &amp; Generate Bill
+        </button>
+      </form>
+    </div>
+
+    <!-- Completed service record -->
+    <div th:if="${request.serviceRecord != null}" class="card animate-in animate-in-delay-1">
+      <div class="card-header">
+        <div class="card-title">Service Record</div>
+        <span class="badge badge-success">Completed</span>
+      </div>
+      <div class="detail-grid">
+        <div class="detail-item" style="grid-column:1/-1;">
+          <div class="detail-label">Work Performed</div>
+          <div class="detail-value" style="font-size:13.5px;line-height:1.6;"
+               th:text="${request.serviceRecord.workPerformed}"></div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">Mileage at Service</div>
+          <div class="detail-value"
+               th:text="${#numbers.formatDecimal(request.serviceRecord.mileageAtService,1,'COMMA',0,'POINT')} + ' km'"></div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">Parts Replaced</div>
+          <div class="detail-value" th:text="${request.serviceRecord.partsReplaced ?: '—'}"></div>
+        </div>
+      </div>
+      <div th:if="${request.serviceRecord.bill != null}" style="margin-top:16px;">
+        <a th:href="@{/bill/{id}(id=${request.serviceRecord.bill.id})}" class="btn btn-primary w-full"
+           style="justify-content:center;">
+          View Bill →
+        </a>
+      </div>
+    </div>
+
+  </div>
+
+</th:block>
+<th:block layout:fragment="scripts">
+<script>
+  function updatePreview() {
+    const labor  = parseFloat(document.getElementById('laborCost')?.value)  || 0;
+    const parts  = parseFloat(document.getElementById('partsCost')?.value)  || 0;
+    const sub    = labor + parts;
+    const tax    = sub * 0.18;
+    const total  = sub + tax;
+    const fmt    = n => '₹' + n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    document.getElementById('previewSubtotal').textContent = fmt(sub);
+    document.getElementById('previewTax').textContent      = fmt(tax);
+    document.getElementById('previewTotal').textContent    = fmt(total);
+  }
+  document.getElementById('laborCost')?.addEventListener('input', updatePreview);
+  document.getElementById('partsCost')?.addEventListener('input', updatePreview);
+</script>
+</th:block>
 </html>

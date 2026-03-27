@@ -1,11 +1,159 @@
-﻿<!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>add</title>
-</head>
-<body>
-    <h1>add</h1>
-</body>
+<!-- ══ ADD VEHICLE ════════════════════════════════════════════════════════ -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/base}">
+<th:block layout:fragment="page-title">Add Vehicle</th:block>
+<th:block layout:fragment="page-subtitle">Register a new vehicle to your garage</th:block>
+<th:block layout:fragment="content">
+
+  <div class="breadcrumb animate-in">
+    <a th:href="@{/vehicle/list}">My Vehicles</a>
+    <span class="sep">/</span>
+    <span class="current">Add Vehicle</span>
+  </div>
+
+  <div th:if="${errorMsg}" class="alert alert-error"><span th:text="${errorMsg}"></span></div>
+
+  <div style="max-width:700px;">
+    <div class="card animate-in animate-in-delay-1">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Vehicle Details</div>
+          <div class="card-subtitle">All fields marked * are required</div>
+        </div>
+        <span style="font-size:36px;">🚘</span>
+      </div>
+
+      <form th:action="@{/vehicle/add}" th:object="${dto}" method="post">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+        <div class="section-title">Basic Information</div>
+
+        <div class="form-row form-row-3">
+          <div class="form-group">
+            <label class="form-label">Make <span class="required">*</span></label>
+            <input type="text" th:field="*{make}" class="form-control"
+                   th:classappend="${#fields.hasErrors('make')} ? 'is-invalid'"
+                   placeholder="Toyota, Honda..."/>
+            <div th:if="${#fields.hasErrors('make')}" class="form-error" th:errors="*{make}"></div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Model <span class="required">*</span></label>
+            <input type="text" th:field="*{model}" class="form-control"
+                   th:classappend="${#fields.hasErrors('model')} ? 'is-invalid'"
+                   placeholder="Camry, Civic..."/>
+            <div th:if="${#fields.hasErrors('model')}" class="form-error" th:errors="*{model}"></div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Year <span class="required">*</span></label>
+            <input type="number" th:field="*{year}" class="form-control"
+                   th:classappend="${#fields.hasErrors('year')} ? 'is-invalid'"
+                   placeholder="2020" min="1900" max="2100"/>
+            <div th:if="${#fields.hasErrors('year')}" class="form-error" th:errors="*{year}"></div>
+          </div>
+        </div>
+
+        <div class="form-row form-row-2">
+          <div class="form-group">
+            <label class="form-label">License Plate <span class="required">*</span></label>
+            <input type="text" th:field="*{licensePlate}" class="form-control"
+                   th:classappend="${#fields.hasErrors('licensePlate')} ? 'is-invalid'"
+                   placeholder="KA01AB1234" style="text-transform:uppercase;font-family:monospace;"/>
+            <div th:if="${#fields.hasErrors('licensePlate')}" class="form-error" th:errors="*{licensePlate}"></div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Color <span class="required">*</span></label>
+            <input type="text" th:field="*{color}" class="form-control"
+                   th:classappend="${#fields.hasErrors('color')} ? 'is-invalid'"
+                   placeholder="Pearl White"/>
+            <div th:if="${#fields.hasErrors('color')}" class="form-error" th:errors="*{color}"></div>
+          </div>
+        </div>
+
+        <div class="form-row form-row-2">
+          <div class="form-group">
+            <label class="form-label">Fuel Type</label>
+            <select th:field="*{fuelType}" class="form-control">
+              <option value="">Select fuel type</option>
+              <option value="Petrol">Petrol</option>
+              <option value="Diesel">Diesel</option>
+              <option value="CNG">CNG</option>
+              <option value="Electric">Electric</option>
+              <option value="Hybrid">Hybrid</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">VIN Number</label>
+            <input type="text" th:field="*{vinNumber}" class="form-control"
+                   placeholder="Optional"/>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+        <div class="section-title">Maintenance Setup</div>
+
+        <div class="form-row form-row-2">
+          <div class="form-group">
+            <label class="form-label">Current Mileage (km) <span class="required">*</span></label>
+            <input type="number" th:field="*{currentMileage}" class="form-control"
+                   th:classappend="${#fields.hasErrors('currentMileage')} ? 'is-invalid'"
+                   placeholder="0" min="0" step="0.1"/>
+            <div class="form-hint">Enter odometer reading at registration</div>
+            <div th:if="${#fields.hasErrors('currentMileage')}" class="form-error" th:errors="*{currentMileage}"></div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Maintenance Policy <span class="required">*</span></label>
+            <select th:field="*{policyId}" class="form-control"
+                    th:classappend="${#fields.hasErrors('policyId')} ? 'is-invalid'">
+              <option value="">Select a policy</option>
+              <option th:each="policy : ${policies}"
+                      th:value="${policy.id}"
+                      th:text="${policy.name + ' — ' + policy.description}"></option>
+            </select>
+            <div th:if="${#fields.hasErrors('policyId')}" class="form-error" th:errors="*{policyId}"></div>
+          </div>
+        </div>
+
+        <!-- Policy preview cards -->
+        <div class="grid grid-3" style="margin-bottom:20px;" id="policyCards">
+          <div th:each="policy : ${policies}"
+               th:id="'policy-' + ${policy.id}"
+               style="padding:14px;border-radius:var(--radius-md);border:1px solid rgba(255,255,255,0.06);
+                      background:var(--slate-900);opacity:0.5;transition:all 0.2s ease;">
+            <div style="font-weight:600;color:var(--amber-400);font-size:13px;"
+                 th:text="${policy.name}"></div>
+            <div style="font-size:11.5px;color:var(--slate-500);margin-top:4px;">
+              Every <span th:text="${policy.mileageInterval}"></span> km
+              or <span th:text="${policy.timeIntervalDays}"></span> days
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:12px;justify-content:flex-end;margin-top:8px;">
+          <a th:href="@{/vehicle/list}" class="btn btn-secondary">Cancel</a>
+          <button type="submit" class="btn btn-primary">
+            🚗 Register Vehicle
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+</th:block>
+<th:block layout:fragment="scripts">
+<script>
+  // Highlight selected policy card
+  document.getElementById('policyId')?.addEventListener('change', function() {
+    document.querySelectorAll('[id^="policy-"]').forEach(c => c.style.opacity = '0.5');
+    if (this.value) {
+      const card = document.getElementById('policy-' + this.value);
+      if (card) {
+        card.style.opacity = '1';
+        card.style.borderColor = 'rgba(245,158,11,0.4)';
+      }
+    }
+  });
+</script>
+</th:block>
 </html>

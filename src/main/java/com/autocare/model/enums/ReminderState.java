@@ -1,4 +1,4 @@
-﻿package com.autocare.model.enums;
+package com.autocare.model.enums;
 
 public enum ReminderState {
     UPCOMING,

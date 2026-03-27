@@ -1,11 +1,183 @@
-﻿<!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>detail</title>
-</head>
-<body>
-    <h1>detail</h1>
-</body>
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/base}">
+<th:block layout:fragment="page-title" th:text="${vehicle.displayName}">Vehicle Detail</th:block>
+<th:block layout:fragment="page-subtitle" th:text="${vehicle.licensePlate}"></th:block>
+<th:block layout:fragment="topbar-actions">
+  <a th:href="@{/service/create}" class="btn btn-primary btn-sm">Request Service</a>
+</th:block>
+<th:block layout:fragment="content">
+
+  <div class="breadcrumb animate-in">
+    <a th:href="@{/vehicle/list}">My Vehicles</a>
+    <span class="sep">/</span>
+    <span class="current" th:text="${vehicle.displayName}"></span>
+  </div>
+
+  <div th:if="${successMsg}" class="alert alert-success animate-in"><span th:text="${successMsg}"></span></div>
+  <div th:if="${errorMsg}"   class="alert alert-error   animate-in"><span th:text="${errorMsg}"></span></div>
+
+  <div class="grid grid-2" style="margin-bottom:24px;">
+
+    <!-- Vehicle info card -->
+    <div class="card animate-in">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+        <div>
+          <div style="font-size:12px;font-weight:500;color:var(--amber-500);
+                      text-transform:uppercase;letter-spacing:1px;"
+               th:text="${vehicle.make}"></div>
+          <div style="font-family:'Playfair Display',serif;font-size:24px;
+                      font-weight:700;color:white;"
+               th:text="${vehicle.model + ' ' + vehicle.year}"></div>
+        </div>
+        <span th:switch="${vehicle.state.name()}">
+          <span th:case="'ACTIVE'"        class="state-pill state-active">● Active</span>
+          <span th:case="'NEEDS_SERVICE'" class="state-pill state-needs-service">● Needs Service</span>
+          <span th:case="'UNDER_SERVICE'" class="state-pill state-under-service">● Under Service</span>
+        </span>
+      </div>
+
+      <div class="detail-grid">
+        <div class="detail-item">
+          <div class="detail-label">License Plate</div>
+          <div class="detail-value" style="font-family:monospace;letter-spacing:1px;"
+               th:text="${vehicle.licensePlate}"></div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">Color</div>
+          <div class="detail-value" th:text="${vehicle.color}"></div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">Fuel Type</div>
+          <div class="detail-value" th:text="${vehicle.fuelType ?: 'Not specified'}"></div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">Policy</div>
+          <div class="detail-value" th:text="${vehicle.maintenancePolicy?.name ?: 'N/A'}"></div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">VIN</div>
+          <div class="detail-value" style="font-family:monospace;font-size:12px;"
+               th:text="${vehicle.vinNumber ?: '—'}"></div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">Registered</div>
+          <div class="detail-value"
+               th:text="${#temporals.format(vehicle.registeredAt,'dd MMM yyyy')}"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mileage card -->
+    <div class="card animate-in animate-in-delay-1">
+      <div class="card-header">
+        <div class="card-title">Odometer Reading</div>
+      </div>
+
+      <div style="text-align:center;padding:16px 0 24px;">
+        <div style="font-family:'Playfair Display',serif;font-size:48px;font-weight:700;color:var(--amber-400);">
+          <span th:text="${#numbers.formatDecimal(vehicle.currentMileage,1,'COMMA',0,'POINT')}"></span>
+          <span style="font-size:20px;color:var(--slate-400);font-weight:400;">km</span>
+        </div>
+        <div style="font-size:12.5px;color:var(--slate-500);margin-top:4px;">
+          Previous: <span th:text="${#numbers.formatDecimal(vehicle.previousMileage,1,'COMMA',0,'POINT')}"></span> km
+        </div>
+      </div>
+
+      <!-- Mileage update form -->
+      <div class="divider"></div>
+      <div style="font-size:13px;font-weight:500;color:var(--slate-300);margin-bottom:12px;">
+        Update Odometer
+      </div>
+      <form th:action="@{/vehicle/{id}/mileage(id=${vehicle.id})}"
+            th:object="${mileageDto}" method="post">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+        <div style="display:flex;gap:10px;align-items:flex-start;">
+          <div style="flex:1;">
+            <input type="number" th:field="*{newMileage}" class="form-control"
+                   th:classappend="${#fields.hasErrors('newMileage')} ? 'is-invalid'"
+                   th:placeholder="'Must be > ' + ${vehicle.currentMileage} + ' km'"
+                   step="0.1"/>
+            <div th:if="${#fields.hasErrors('newMileage')}" class="form-error"
+                 th:errors="*{newMileage}"></div>
+          </div>
+          <button type="submit" class="btn btn-primary">Update</button>
+        </div>
+        <div class="form-hint" style="margin-top:6px;">Mileage can only increase</div>
+      </form>
+
+      <!-- Active reminder -->
+      <div th:if="${activeReminder != null}" style="margin-top:20px;">
+        <div class="divider"></div>
+        <div style="font-size:13px;font-weight:500;color:var(--slate-300);margin-bottom:12px;">
+          Active Reminder
+        </div>
+        <div style="padding:14px;border-radius:var(--radius-md);background:var(--slate-900);
+                    border:1px solid rgba(255,255,255,0.06);">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+            <span th:class="'badge ' + ${activeReminder.badgeClass}">
+              <span class="badge-dot"></span>
+              <span th:text="${activeReminder.urgencyLabel}"></span>
+            </span>
+          </div>
+          <div class="detail-grid" style="grid-template-columns:1fr 1fr;gap:10px;">
+            <div>
+              <div style="font-size:11px;color:var(--slate-500);">Due Date</div>
+              <div style="font-size:13px;color:var(--slate-200);"
+                   th:text="${#temporals.format(activeReminder.dueDate,'dd MMM yyyy')}"></div>
+            </div>
+            <div>
+              <div style="font-size:11px;color:var(--slate-500);">Due Mileage</div>
+              <div style="font-size:13px;color:var(--slate-200);"
+                   th:text="${#numbers.formatDecimal(activeReminder.dueMileage,1,'COMMA',0,'POINT')} + ' km'"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Service History -->
+  <div class="card animate-in animate-in-delay-2">
+    <div class="card-header">
+      <div class="card-title">Reminder History</div>
+      <span class="badge badge-amber" th:text="${reminders.size()} + ' records'"></span>
+    </div>
+
+    <div th:if="${reminders.empty}" class="empty-state">
+      <span class="empty-icon">🔔</span>
+      <div class="empty-title">No reminder history</div>
+    </div>
+
+    <div th:unless="${reminders.empty}" class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Status</th>
+            <th>Baseline</th>
+            <th>Due Mileage</th>
+            <th>Due Date</th>
+            <th>Completed</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:each="rem : ${reminders}">
+            <td>
+              <span th:class="'badge ' + ${rem.badgeClass}">
+                <span class="badge-dot"></span>
+                <span th:text="${rem.urgencyLabel}"></span>
+              </span>
+            </td>
+            <td th:text="${#numbers.formatDecimal(rem.baselineMileage,1,'COMMA',0,'POINT')} + ' km'" class="text-muted"></td>
+            <td th:text="${#numbers.formatDecimal(rem.dueMileage,1,'COMMA',0,'POINT')} + ' km'"></td>
+            <td th:text="${#temporals.format(rem.dueDate,'dd MMM yyyy')}" class="text-muted"></td>
+            <td th:text="${rem.completedAt != null ? #temporals.format(rem.completedAt,'dd MMM yyyy') : '—'}" class="text-muted"></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</th:block>
 </html>

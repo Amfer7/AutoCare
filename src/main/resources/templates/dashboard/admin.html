@@ -1,11 +1,100 @@
-﻿<!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>admin</title>
-</head>
-<body>
-    <h1>admin</h1>
-</body>
+<!-- ══ ADMIN DASHBOARD ═══════════════════════════════════════════════════ -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/base}">
+<th:block layout:fragment="page-title">Admin Dashboard</th:block>
+<th:block layout:fragment="page-subtitle">System Overview</th:block>
+<th:block layout:fragment="topbar-actions">
+  <a th:href="@{/admin/reports}" class="btn btn-secondary btn-sm">Reports</a>
+  <a th:href="@{/admin/users}"   class="btn btn-primary   btn-sm">Manage Users</a>
+</th:block>
+<th:block layout:fragment="content">
+
+  <div class="grid grid-4" style="margin-bottom:28px;">
+    <div class="stat-card blue animate-in">
+      <div class="stat-icon blue">📋</div>
+      <div class="stat-value" th:text="${totalRequests}" th:attr="data-count=${totalRequests}">0</div>
+      <div class="stat-label">Total Requests</div>
+    </div>
+    <div class="stat-card amber animate-in animate-in-delay-1">
+      <div class="stat-icon amber">🔔</div>
+      <div class="stat-value" th:text="${needsService}" th:attr="data-count=${needsService}">0</div>
+      <div class="stat-label">Needs Service</div>
+    </div>
+    <div class="stat-card blue animate-in animate-in-delay-2">
+      <div class="stat-icon blue">⚙️</div>
+      <div class="stat-value" th:text="${underService}" th:attr="data-count=${underService}">0</div>
+      <div class="stat-label">Under Service</div>
+    </div>
+    <div class="stat-card red animate-in animate-in-delay-3">
+      <div class="stat-icon red">💳</div>
+      <div class="stat-value" th:text="${unpaidBills.size()}" th:attr="data-count=${unpaidBills.size()}">0</div>
+      <div class="stat-label">Unpaid Bills</div>
+    </div>
+  </div>
+
+  <div class="grid grid-2">
+    <!-- Recent requests -->
+    <div class="card animate-in animate-in-delay-1">
+      <div class="card-header">
+        <div class="card-title">Recent Requests</div>
+        <a th:href="@{/service/all}" class="btn btn-ghost btn-sm">View All →</a>
+      </div>
+      <div class="table-container">
+        <table>
+          <thead><tr><th>Vehicle</th><th>Owner</th><th>Status</th><th></th></tr></thead>
+          <tbody>
+            <tr th:each="req : ${recentRequests}">
+              <td>
+                <div style="font-weight:500;color:white;" th:text="${req.vehicle.displayName}"></div>
+                <div class="vehicle-plate" style="font-size:11px;padding:1px 6px;"
+                     th:text="${req.vehicle.licensePlate}"></div>
+              </td>
+              <td th:text="${req.owner.fullName}" class="text-muted"></td>
+              <td>
+                <span th:class="'badge ' + ${req.stateBadgeClass}">
+                  <span class="badge-dot"></span>
+                  <span th:text="${req.state}"></span>
+                </span>
+              </td>
+              <td><a th:href="@{/service/{id}(id=${req.id})}" class="btn btn-ghost btn-sm">→</a></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Unpaid bills -->
+    <div class="card animate-in animate-in-delay-2">
+      <div class="card-header">
+        <div class="card-title">Unpaid Bills</div>
+        <a th:href="@{/bill/unpaid}" class="btn btn-ghost btn-sm">View All →</a>
+      </div>
+      <div th:if="${unpaidBills.empty}" class="empty-state" style="padding:32px 0;">
+        <span class="empty-icon">✅</span>
+        <div class="empty-title">All bills paid!</div>
+      </div>
+      <div th:each="bill, iter : ${unpaidBills}" th:if="${iter.index < 5}">
+        <div style="display:flex;justify-content:space-between;align-items:center;
+                    padding:11px;border-radius:var(--radius-md);background:var(--slate-900);
+                    margin-bottom:8px;border:1px solid rgba(255,255,255,0.05);">
+          <div>
+            <div style="font-size:13.5px;font-weight:500;color:white;"
+                 th:text="${bill.vehicleDisplayName}"></div>
+            <div style="font-size:12px;color:var(--slate-500);"
+                 th:text="${bill.ownerName}"></div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-family:'Playfair Display',serif;font-size:16px;color:var(--amber-400);">
+              ₹<span th:text="${#numbers.formatDecimal(bill.totalAmount,1,'COMMA',2,'POINT')}"></span>
+            </div>
+            <a th:href="@{/bill/{id}(id=${bill.billId})}" class="btn btn-ghost btn-sm" style="margin-top:4px;">View</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</th:block>
 </html>

@@ -1,11 +1,191 @@
-﻿<!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>register</title>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Create Account — AutoCare</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <link th:href="@{/css/autocare.css}" rel="stylesheet"/>
+  <style>
+    .role-selector { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
+    .role-option { display: none; }
+    .role-label {
+      display: flex; flex-direction: column; align-items: center; gap: 6px;
+      padding: 14px 10px;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: var(--transition);
+      font-size: 12.5px; color: var(--slate-400);
+      text-align: center;
+      background: var(--slate-900);
+    }
+    .role-label:hover { border-color: rgba(245,158,11,0.3); color: var(--slate-200); }
+    .role-option:checked + .role-label {
+      border-color: var(--amber-500);
+      background: rgba(245,158,11,0.08);
+      color: var(--amber-400);
+    }
+    .role-icon { font-size: 22px; }
+    .role-extra { display: none; }
+    .role-extra.visible { display: block; }
+    .register-panel { max-width: 520px; width: 100%; }
+  </style>
 </head>
 <body>
-    <h1>register</h1>
+<div class="auth-page">
+  <div class="auth-bg"></div>
+
+  <div class="auth-panel register-panel" style="flex:none; width:520px; max-height:100vh; overflow-y:auto;">
+    <div class="auth-brand">
+      <div class="auth-brand-icon">🚗</div>
+      <span class="auth-brand-name">AutoCare</span>
+    </div>
+
+    <h1 class="auth-heading">Create your account.</h1>
+    <p class="auth-subheading">Join AutoCare and take control of your vehicle's health.</p>
+
+    <div th:if="${errorMsg}" class="alert alert-error">
+      <span class="alert-icon">✕</span>
+      <span th:text="${errorMsg}"></span>
+    </div>
+
+    <form th:action="@{/auth/register}" th:object="${dto}" method="post">
+      <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+      <!-- Role selection -->
+      <div class="form-group animate-in">
+        <label class="form-label">I am a <span class="required">*</span></label>
+        <div class="role-selector">
+          <div>
+            <input type="radio" th:field="*{role}" value="OWNER" id="role-owner" class="role-option"/>
+            <label for="role-owner" class="role-label">
+              <span class="role-icon">👤</span>
+              Vehicle Owner
+            </label>
+          </div>
+          <div>
+            <input type="radio" th:field="*{role}" value="STAFF" id="role-staff" class="role-option"/>
+            <label for="role-staff" class="role-label">
+              <span class="role-icon">🔧</span>
+              Service Staff
+            </label>
+          </div>
+          <div>
+            <input type="radio" th:field="*{role}" value="ADMIN" id="role-admin" class="role-option"/>
+            <label for="role-admin" class="role-label">
+              <span class="role-icon">⚙️</span>
+              Administrator
+            </label>
+          </div>
+        </div>
+        <div th:if="${#fields.hasErrors('role')}" class="form-error">
+          <span>⚠</span> <span th:errors="*{role}"></span>
+        </div>
+      </div>
+
+      <!-- Name & Phone -->
+      <div class="form-row form-row-2 animate-in animate-in-delay-1">
+        <div class="form-group" style="margin-bottom:0">
+          <label class="form-label" for="fullName">Full Name <span class="required">*</span></label>
+          <input type="text" id="fullName" th:field="*{fullName}" class="form-control"
+                 th:classappend="${#fields.hasErrors('fullName')} ? 'is-invalid'"
+                 placeholder="John Doe"/>
+          <div th:if="${#fields.hasErrors('fullName')}" class="form-error"
+               th:errors="*{fullName}"></div>
+        </div>
+        <div class="form-group" style="margin-bottom:0">
+          <label class="form-label" for="phone">Phone</label>
+          <input type="tel" id="phone" th:field="*{phone}" class="form-control"
+                 th:classappend="${#fields.hasErrors('phone')} ? 'is-invalid'"
+                 placeholder="9876543210"/>
+          <div th:if="${#fields.hasErrors('phone')}" class="form-error"
+               th:errors="*{phone}"></div>
+        </div>
+      </div>
+
+      <!-- Email -->
+      <div class="form-group animate-in animate-in-delay-2">
+        <label class="form-label" for="email">Email Address <span class="required">*</span></label>
+        <input type="email" id="email" th:field="*{email}" class="form-control"
+               th:classappend="${#fields.hasErrors('email')} ? 'is-invalid'"
+               placeholder="your@email.com"/>
+        <div th:if="${#fields.hasErrors('email')}" class="form-error"
+             th:errors="*{email}"></div>
+      </div>
+
+      <!-- Passwords -->
+      <div class="form-row form-row-2 animate-in animate-in-delay-3">
+        <div class="form-group" style="margin-bottom:0">
+          <label class="form-label" for="password">Password <span class="required">*</span></label>
+          <input type="password" id="password" th:field="*{password}" class="form-control"
+                 th:classappend="${#fields.hasErrors('password')} ? 'is-invalid'"
+                 placeholder="Min. 8 characters"/>
+          <div th:if="${#fields.hasErrors('password')}" class="form-error"
+               th:errors="*{password}"></div>
+        </div>
+        <div class="form-group" style="margin-bottom:0">
+          <label class="form-label" for="confirmPassword">Confirm Password <span class="required">*</span></label>
+          <input type="password" id="confirmPassword" th:field="*{confirmPassword}" class="form-control"
+                 th:classappend="${#fields.hasErrors('confirmPassword')} ? 'is-invalid'"
+                 placeholder="Repeat password"/>
+          <div th:if="${#fields.hasErrors('confirmPassword')}" class="form-error"
+               th:errors="*{confirmPassword}"></div>
+        </div>
+      </div>
+
+      <!-- Staff: specialization -->
+      <div class="form-group role-extra" id="staff-extra">
+        <label class="form-label" for="specialization">Specialization</label>
+        <select id="specialization" th:field="*{specialization}" class="form-control">
+          <option value="">Select specialization</option>
+          <option value="General">General Maintenance</option>
+          <option value="Engine">Engine Specialist</option>
+          <option value="Tires">Tires &amp; Wheels</option>
+          <option value="Electrical">Electrical Systems</option>
+          <option value="Body">Body &amp; Paint</option>
+        </select>
+      </div>
+
+      <!-- Admin: department -->
+      <div class="form-group role-extra" id="admin-extra">
+        <label class="form-label" for="department">Department</label>
+        <input type="text" id="department" th:field="*{department}" class="form-control"
+               placeholder="e.g. Operations"/>
+      </div>
+
+      <button type="submit" class="btn btn-primary w-full animate-in animate-in-delay-4"
+              style="justify-content:center; margin-top:8px;">
+        Create Account →
+      </button>
+    </form>
+
+    <p class="auth-footer-text">
+      Already have an account? <a th:href="@{/auth/login}">Sign in →</a>
+    </p>
+  </div>
+
+  <div class="auth-hero">
+    <div class="hero-graphic">
+      <span class="hero-car-icon">🛻</span>
+      <h2 class="hero-title">Every journey<br/><span>deserves care.</span></h2>
+      <p class="hero-desc">
+        From the first kilometre to the last, AutoCare ensures your vehicle is
+        always performing at its best.
+      </p>
+    </div>
+  </div>
+</div>
+
+<script>
+  function updateRoleExtras() {
+    const role = document.querySelector('input[name="role"]:checked')?.value;
+    document.getElementById('staff-extra').classList.toggle('visible', role === 'STAFF');
+    document.getElementById('admin-extra').classList.toggle('visible', role === 'ADMIN');
+  }
+  document.querySelectorAll('input[name="role"]').forEach(r =>
+    r.addEventListener('change', updateRoleExtras));
+  updateRoleExtras();
+</script>
 </body>
 </html>

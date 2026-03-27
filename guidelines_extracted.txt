@@ -1,0 +1,77 @@
+
+--- PAGE 1 ---
+UE23CS352B – Object Oriented Analysis & Design
+Mini-Project Guidelines
+The students have to form a team of 4 members and come up with a problem. Students need to  
+prepare  UML  Diagrams  for  the  same  and  use  Architecture,  Design  Principles  and  Patterns  to 
+develop a solution for the chosen problem. Students need to implement the same using Java  
+(Usage of the framework is appreciated).
+Phase 1  – Creating the team and submitting the mini-project specifications (Deadline – 23 rd Jan  
+2026)
+Phase 2 -  Analysis, Design and Implementation (Deadline – by week 15)
+In Phase 1, students will submit Mini-project specifications which should be detailed with clear  
+functional requirements. Below is the sample specifications. Mini-project should be chosen from  
+different domains like Education, Healthcare, Finance, Entertainment, e-Commerce, Social media  
+etc.
+Sample Mini-project Specifications: Library Management Software
+Library Management Software is to simplify and automate how members, librarians, and 
+administrators interact with library resources. The primary goal of the system is to ensure efficient 
+management of books, users, and transactions such as issuing and returning books, while 
+maintaining accurate records and minimizing manual effort.
+The system should support different user types: Members, who primarily search, borrow, and return 
+books; Librarians, who manage books, monitor transactions, and calculate fines and Administrators, 
+who oversee user management and overall system operations. Each user interacts with the system 
+through authentication mechanisms such as registration and login, and their access to functionalities 
+depends on their assigned role.
+Members can search for books using various criteria such as title, author, or category and view 
+detailed information including availability status. Before a book is issued, the system must always 
+verify the availability of the selected book to ensure that only available books can be borrowed. 
+Members can return borrowed books within the due date, and during every return operation, the 
+availability status of the returned book in the library catalog must be updated.
+Librarians are responsible for maintaining the library catalog. They can add new books, update 
+book information, remove damaged or outdated books, and manage member records. In case of 
+overdue returns, librarians calculate the applicable fine based on library policies, and members can 
+subsequently view and pay the fine through the system.
+Administrators have higher-level control over the system. They can manage librarian accounts, 
+generate usage reports, monitor system performance, and ensure smooth operation of all library 
+activities.
+--- PAGE 2 ---
+(i) Mini Project Evaluation Policy: 
+1: Presentation of the project will be team-based.
+2: Each student will be evaluated individually. 
+(ii) Marks Distribution:
+Analysis and  Design  Models  (Use  Case  diagram  –  1,  Class Diagram  – 1,  
+Activity Diagram – 4, State Diagram – 4)
+2 marks
+Use of MVC Architecture Pattern 2 mark
+Use of Design Principles and Patterns (at least 1each per team member) 3 marks
+Presentation/ Demo/ Explaining the code 3 marks
+Total 10 marks
+Note: * - 4 Design patterns (should contain  Creational, Structural and Behavioral Patterns apart  
+from one enforced by the framework ) and 4 design principles in total for the project for a 4  
+member team 
+(iii) Complexity of the project:
+ A  typical  team  size  of  4  members  would  be  required  to  implement  at  least  4  major  
+features/use cases and 4 minor features/use cases (1 of each type per team member).
+ There should be equal participation of each student in a team. 
+(iv) Important Aspects to be followed:
+ The implementation should be done using any JAVA technologies that must include an MVC 
+framework (like Java Spring Framework) along with optional Frontend frameworks like Java  
+Swing  or  JavaFX.  However,  only  Desktop  and  Web  applications  are  accepted.  Mobile 
+applications are not accepted.
+ Each student should own a use case completely and implement it (that is, avoid situations  
+where a team member will own only UI, another will own Backend etc.) 
+ The implemented use cases should be merged into a single application.  The data related to 
+the project should be persisted in any database of your choice.
+(v)  Submission: - Report document (PDF) containing 
+ Title page with course details, project title, and team member details – PESU template to  
+be used.
+ Problem statement (synopsis etc.)
+ Models (Use Case, Class Models, Activity Diagrams, State Diagrams)
+--- PAGE 3 ---
+ Architecture  Patterns,  Design  Principles  and  Design  Patterns  used  along  with  a  short  
+description which elaborates how that is applied to your problem domain.
+ Github link to the Codebase (Repository should be public and accessible to all)
+ Individual contributions of the team members
+ Screenshots  with  input  values  populated  and  output  shown  (Use  white  background  
+screens)

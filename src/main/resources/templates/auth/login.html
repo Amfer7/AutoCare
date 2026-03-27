@@ -1,11 +1,107 @@
-﻿<!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<!-- ═══════════════════════════════════════════════════════════════════════
+     LOGIN PAGE — auth/login.html
+     ═══════════════════════════════════════════════════════════════════════ -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>login</title>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Sign In — AutoCare</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <link th:href="@{/css/autocare.css}" rel="stylesheet"/>
 </head>
 <body>
-    <h1>login</h1>
+<div class="auth-page">
+  <div class="auth-bg"></div>
+
+  <!-- Left panel -->
+  <div class="auth-panel">
+    <div class="auth-brand">
+      <div class="auth-brand-icon">🚗</div>
+      <span class="auth-brand-name">AutoCare</span>
+    </div>
+
+    <h1 class="auth-heading">Welcome back.</h1>
+    <p class="auth-subheading">Sign in to manage your vehicles and stay on top of every service.</p>
+
+    <!-- Flash messages -->
+    <div th:if="${successMsg}" class="alert alert-success animate-in">
+      <span class="alert-icon">✓</span>
+      <span th:text="${successMsg}"></span>
+    </div>
+    <div th:if="${errorMsg}" class="alert alert-error animate-in">
+      <span class="alert-icon">✕</span>
+      <span th:text="${errorMsg}"></span>
+    </div>
+    <div th:if="${logoutMsg}" class="alert alert-info animate-in">
+      <span class="alert-icon">→</span>
+      <span th:text="${logoutMsg}"></span>
+    </div>
+
+    <form th:action="@{/auth/login}" method="post" id="loginForm">
+      <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+      <div class="form-group animate-in animate-in-delay-1">
+        <label class="form-label" for="email">Email Address</label>
+        <input type="email" id="email" name="email" class="form-control"
+               placeholder="your@email.com" required autocomplete="email"/>
+      </div>
+
+      <div class="form-group animate-in animate-in-delay-2">
+        <label class="form-label" for="password">Password</label>
+        <input type="password" id="password" name="password" class="form-control"
+               placeholder="••••••••" required autocomplete="current-password"/>
+      </div>
+
+      <button type="submit" class="btn btn-primary w-full animate-in animate-in-delay-3"
+              style="justify-content:center; margin-top:8px;" id="loginBtn">
+        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/>
+        </svg>
+        Sign In
+      </button>
+    </form>
+
+    <p class="auth-footer-text animate-in animate-in-delay-4">
+      Don't have an account? <a th:href="@{/auth/register}">Create one free →</a>
+    </p>
+  </div>
+
+  <!-- Right hero -->
+  <div class="auth-hero">
+    <div class="hero-graphic">
+      <span class="hero-car-icon">🚘</span>
+      <h2 class="hero-title">Your vehicle,<br/><span>always in care.</span></h2>
+      <p class="hero-desc">
+        AutoCare tracks every kilometre, every service, and every bill —
+        so you never miss a maintenance window again.
+      </p>
+      <div class="hero-stats">
+        <div class="hero-stat-item">
+          <div class="hero-stat-num">100%</div>
+          <div class="hero-stat-label">Service Tracked</div>
+        </div>
+        <div class="hero-stat-item">
+          <div class="hero-stat-num">24/7</div>
+          <div class="hero-stat-label">Smart Reminders</div>
+        </div>
+        <div class="hero-stat-item">
+          <div class="hero-stat-num">₹0</div>
+          <div class="hero-stat-label">Hidden Costs</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.getElementById('loginForm').addEventListener('submit', function() {
+    const btn = document.getElementById('loginBtn');
+    btn.innerHTML = '<div class="spinner"></div> Signing in...';
+    btn.disabled = true;
+  });
+</script>
 </body>
 </html>

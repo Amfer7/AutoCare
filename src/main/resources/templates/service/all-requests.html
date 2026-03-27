@@ -1,0 +1,54 @@
+<!-- ══ ALL REQUESTS (STAFF/ADMIN) ════════════════════════════════════════ -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/base}">
+<th:block layout:fragment="page-title">All Service Requests</th:block>
+<th:block layout:fragment="page-subtitle" th:text="${requests.size()} + ' requests'"></th:block>
+<th:block layout:fragment="content">
+
+  <div class="filter-tabs animate-in">
+    <a th:href="@{/service/all}" class="filter-tab" th:classappend="${filter == null} ? 'active'">All</a>
+    <a th:href="@{/service/all(state='PENDING')}"     class="filter-tab" th:classappend="${filter == 'PENDING'} ? 'active'">Pending</a>
+    <a th:href="@{/service/all(state='IN_PROGRESS')}" class="filter-tab" th:classappend="${filter == 'IN_PROGRESS'} ? 'active'">In Progress</a>
+    <a th:href="@{/service/all(state='COMPLETED')}"   class="filter-tab" th:classappend="${filter == 'COMPLETED'} ? 'active'">Completed</a>
+    <a th:href="@{/service/all(state='CANCELLED')}"   class="filter-tab" th:classappend="${filter == 'CANCELLED'} ? 'active'">Cancelled</a>
+  </div>
+
+  <div class="card animate-in animate-in-delay-1">
+    <div th:if="${requests.empty}" class="empty-state">
+      <span class="empty-icon">📋</span>
+      <div class="empty-title">No requests found</div>
+    </div>
+    <div th:unless="${requests.empty}" class="table-container">
+      <table>
+        <thead>
+          <tr><th>#</th><th>Vehicle</th><th>Owner</th><th>Description</th><th>Staff</th><th>Date</th><th>Status</th><th></th></tr>
+        </thead>
+        <tbody>
+          <tr th:each="req : ${requests}">
+            <td class="text-muted" style="font-family:monospace;" th:text="'#' + ${req.id}"></td>
+            <td>
+              <div style="font-weight:500;color:white;" th:text="${req.vehicle.displayName}"></div>
+              <div class="vehicle-plate" style="font-size:11px;padding:1px 6px;" th:text="${req.vehicle.licensePlate}"></div>
+            </td>
+            <td th:text="${req.owner.fullName}" class="text-muted"></td>
+            <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--slate-400);"
+                th:text="${req.description}"></td>
+            <td th:text="${req.assignedStaff?.fullName ?: '—'}" class="text-muted"></td>
+            <td th:text="${#temporals.format(req.requestedAt,'dd MMM yyyy')}" class="text-muted"></td>
+            <td>
+              <span th:class="'badge ' + ${req.stateBadgeClass}">
+                <span class="badge-dot"></span>
+                <span th:text="${req.state}"></span>
+              </span>
+            </td>
+            <td><a th:href="@{/service/{id}(id=${req.id})}" class="btn btn-ghost btn-sm">→</a></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</th:block>
+</html>

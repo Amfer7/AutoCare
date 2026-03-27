@@ -1,4 +1,8 @@
-﻿package com.autocare.config;
+package com.autocare.config;
 
-public class SchedulerConfig {
-}
+import org.springframework.context.annotation.Configuration;
+import org.springframework.scheduling.annotation.EnableScheduling;
+
+@Configuration
+@EnableScheduling
+public class SchedulerConfig {}

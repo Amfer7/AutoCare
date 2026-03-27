@@ -1,11 +1,78 @@
-﻿<!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>request-list</title>
-</head>
-<body>
-    <h1>request-list</h1>
-</body>
+<!-- ══ SERVICE REQUEST LIST (OWNER) ══════════════════════════════════════ -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/base}">
+<th:block layout:fragment="page-title">Service Requests</th:block>
+<th:block layout:fragment="page-subtitle">Track all your service history</th:block>
+<th:block layout:fragment="topbar-actions">
+  <a th:href="@{/service/create}" class="btn btn-primary btn-sm">+ New Request</a>
+</th:block>
+<th:block layout:fragment="content">
+
+  <div th:if="${successMsg}" class="alert alert-success animate-in"><span th:text="${successMsg}"></span></div>
+  <div th:if="${errorMsg}"   class="alert alert-error   animate-in"><span th:text="${errorMsg}"></span></div>
+
+  <div style="display:flex;gap:16px;margin-bottom:24px;" class="animate-in">
+    <div class="stat-card amber" style="flex:1;padding:16px;">
+      <div style="font-size:11px;color:var(--slate-500);text-transform:uppercase;letter-spacing:0.7px;">Pending</div>
+      <div style="font-family:'Playfair Display',serif;font-size:28px;font-weight:700;color:var(--amber-400);"
+           th:text="${pendingCount}"></div>
+    </div>
+    <div class="stat-card blue" style="flex:1;padding:16px;">
+      <div style="font-size:11px;color:var(--slate-500);text-transform:uppercase;letter-spacing:0.7px;">In Progress</div>
+      <div style="font-family:'Playfair Display',serif;font-size:28px;font-weight:700;color:var(--blue-400);"
+           th:text="${inProgressCount}"></div>
+    </div>
+    <div class="stat-card green" style="flex:1;padding:16px;">
+      <div style="font-size:11px;color:var(--slate-500);text-transform:uppercase;letter-spacing:0.7px;">Total</div>
+      <div style="font-family:'Playfair Display',serif;font-size:28px;font-weight:700;color:var(--green-400);"
+           th:text="${requests.size()}"></div>
+    </div>
+  </div>
+
+  <div th:if="${requests.empty}" class="empty-state card animate-in">
+    <span class="empty-icon">⚙️</span>
+    <div class="empty-title">No service requests yet</div>
+    <div class="empty-desc">When your vehicle needs servicing, create a request and our team will take care of it.</div>
+    <a th:href="@{/service/create}" class="btn btn-primary">Create First Request</a>
+  </div>
+
+  <div th:unless="${requests.empty}" class="card animate-in animate-in-delay-1">
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th><th>Vehicle</th><th>Description</th>
+            <th>Staff</th><th>Requested</th><th>Status</th><th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:each="req : ${requests}">
+            <td class="text-muted" style="font-family:monospace;" th:text="'#' + ${req.id}"></td>
+            <td>
+              <div style="font-weight:500;color:white;" th:text="${req.vehicle.displayName}"></div>
+              <div class="vehicle-plate" style="font-size:11px;padding:1px 6px;"
+                   th:text="${req.vehicle.licensePlate}"></div>
+            </td>
+            <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--slate-400);"
+                th:text="${req.description}"></td>
+            <td th:text="${req.assignedStaff?.fullName ?: 'Unassigned'}" class="text-muted"></td>
+            <td th:text="${#temporals.format(req.requestedAt,'dd MMM yyyy')}" class="text-muted"></td>
+            <td>
+              <span th:class="'badge ' + ${req.stateBadgeClass}">
+                <span class="badge-dot"></span>
+                <span th:text="${req.state}"></span>
+              </span>
+            </td>
+            <td>
+              <a th:href="@{/service/{id}(id=${req.id})}" class="btn btn-ghost btn-sm">Details →</a>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</th:block>
 </html>

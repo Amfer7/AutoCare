@@ -1,0 +1,55 @@
+<!-- ══ UNPAID BILLS (STAFF/ADMIN) ════════════════════════════════════════ -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/base}">
+<th:block layout:fragment="page-title">Unpaid Bills</th:block>
+<th:block layout:fragment="page-subtitle" th:text="${bills.size()} + ' outstanding'"></th:block>
+<th:block layout:fragment="content">
+
+  <div th:if="${totalOutstanding > 0}"
+       class="card animate-in" style="background:rgba(245,158,11,0.06);border-color:rgba(245,158,11,0.2);margin-bottom:24px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;">
+      <div>
+        <div style="font-size:12px;color:var(--slate-500);text-transform:uppercase;letter-spacing:0.7px;">Total Outstanding</div>
+        <div style="font-family:'Playfair Display',serif;font-size:36px;font-weight:700;color:var(--amber-400);">
+          ₹<span th:text="${#numbers.formatDecimal(totalOutstanding,1,'COMMA',2,'POINT')}"></span>
+        </div>
+      </div>
+      <span style="font-size:48px;opacity:0.3;">💳</span>
+    </div>
+  </div>
+
+  <div th:if="${bills.empty}" class="empty-state card animate-in">
+    <span class="empty-icon">✅</span>
+    <div class="empty-title">All bills are paid!</div>
+  </div>
+
+  <div th:unless="${bills.empty}" class="card animate-in animate-in-delay-1">
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr><th>#</th><th>Vehicle</th><th>Owner</th><th>Labour</th><th>Parts</th><th>Total</th><th>Generated</th><th></th></tr>
+        </thead>
+        <tbody>
+          <tr th:each="bill : ${bills}">
+            <td class="text-muted" style="font-family:monospace;" th:text="'#' + ${bill.billId}"></td>
+            <td style="font-weight:500;color:white;" th:text="${bill.vehicleDisplayName}"></td>
+            <td th:text="${bill.ownerName}" class="text-muted"></td>
+            <td th:text="'₹' + ${#numbers.formatDecimal(bill.laborCost,1,'COMMA',2,'POINT')}" class="text-muted"></td>
+            <td th:text="'₹' + ${#numbers.formatDecimal(bill.partsCost,1,'COMMA',2,'POINT')}" class="text-muted"></td>
+            <td>
+              <span style="font-family:'Playfair Display',serif;font-size:15px;color:var(--amber-400);">
+                ₹<span th:text="${#numbers.formatDecimal(bill.totalAmount,1,'COMMA',2,'POINT')}"></span>
+              </span>
+            </td>
+            <td th:text="${bill.generatedAt}" class="text-muted"></td>
+            <td><a th:href="@{/bill/{id}(id=${bill.billId})}" class="btn btn-primary btn-sm">Pay →</a></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</th:block>
+</html>

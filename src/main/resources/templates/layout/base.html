@@ -1,11 +1,263 @@
-﻿<!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>base</title>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title layout:title-pattern="$CONTENT_TITLE — AutoCare">AutoCare</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin=""/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+
+  <!-- Main CSS -->
+  <link th:href="@{/css/autocare.css}" rel="stylesheet"/>
+
+  <th:block layout:fragment="head-extra"></th:block>
 </head>
 <body>
-    <h1>base</h1>
+<div class="app-wrapper">
+
+  <!-- ══ SIDEBAR ══════════════════════════════════════════════════════════ -->
+  <aside class="sidebar" id="sidebar">
+
+    <!-- Brand -->
+    <div class="sidebar-brand">
+      <a href="#" class="brand-logo">
+        <div class="brand-icon">🚗</div>
+        <div>
+          <span class="brand-name">AutoCare</span>
+          <span class="brand-tagline">Vehicle Care Platform</span>
+        </div>
+      </a>
+    </div>
+
+    <!-- Current user -->
+    <div class="sidebar-user">
+      <div class="user-pill">
+        <div class="user-avatar" sec:authentication="name" th:text="${#strings.substring(#authentication.name, 0, 1).toUpperCase()}">A</div>
+        <div class="user-info">
+          <div class="user-name" sec:authentication="name" th:text="${#authentication.name}">user@email.com</div>
+          <div class="user-role"
+               th:text="${#authorization.expression('hasRole(''ADMIN'')') ? 'Administrator' :
+                          #authorization.expression('hasRole(''STAFF'')') ? 'Service Staff' : 'Vehicle Owner'}">
+            Role
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="sidebar-nav">
+
+      <!-- OWNER NAV -->
+      <div sec:authorize="hasRole('OWNER')">
+        <div class="nav-section-label">Overview</div>
+        <a th:href="@{/dashboard}"
+           th:classappend="${(#httpServletRequest != null ? #httpServletRequest.requestURI : '') == '/dashboard'} ? 'active'"
+           class="nav-item">
+          <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+          </svg>
+          Dashboard
+        </a>
+
+        <div class="nav-section-label">My Garage</div>
+        <a th:href="@{/vehicle/list}"
+           th:classappend="${(#httpServletRequest != null ? #httpServletRequest.requestURI : '').startsWith('/vehicle')} ? 'active'"
+           class="nav-item">
+          <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M19 9l-7 7-7-7"/>
+          </svg>
+          My Vehicles
+        </a>
+        <a th:href="@{/reminder/list}"
+           th:classappend="${(#httpServletRequest != null ? #httpServletRequest.requestURI : '').startsWith('/reminder')} ? 'active'"
+           class="nav-item">
+          <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 00-5-5.917V4a1 1 0 10-2 0v1.083A6 6 0 006 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+          </svg>
+          Reminders
+        </a>
+
+        <div class="nav-section-label">Service</div>
+        <a th:href="@{/service/list}"
+           th:classappend="${(#httpServletRequest != null ? #httpServletRequest.requestURI : '').startsWith('/service')} ? 'active'"
+           class="nav-item">
+          <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37a1.724 1.724 0 002.572-1.065z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+          </svg>
+          Service Requests
+        </a>
+        <a th:href="@{/service/create}" class="nav-item">
+          <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+          </svg>
+          New Request
+        </a>
+        <a th:href="@{/bill/list}"
+           th:classappend="${(#httpServletRequest != null ? #httpServletRequest.requestURI : '').startsWith('/bill')} ? 'active'"
+           class="nav-item">
+          <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z"/>
+          </svg>
+          Bills &amp; Payments
+        </a>
+      </div>
+
+      <!-- STAFF NAV -->
+      <div sec:authorize="hasRole('STAFF')">
+        <div class="nav-section-label">Overview</div>
+        <a th:href="@{/staff/dashboard}"
+           th:classappend="${(#httpServletRequest != null ? #httpServletRequest.requestURI : '') == '/staff/dashboard'} ? 'active'"
+           class="nav-item">
+          <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+          </svg>
+          Dashboard
+        </a>
+        <div class="nav-section-label">Service</div>
+        <a th:href="@{/service/all}"
+           th:classappend="${(#httpServletRequest != null ? #httpServletRequest.requestURI : '').startsWith('/service')} ? 'active'"
+           class="nav-item">
+          <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+          </svg>
+          All Requests
+        </a>
+        <a th:href="@{/bill/unpaid}" class="nav-item">
+          <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z"/>
+          </svg>
+          Unpaid Bills
+        </a>
+      </div>
+
+      <!-- ADMIN NAV -->
+      <div sec:authorize="hasRole('ADMIN')">
+        <div class="nav-section-label">Overview</div>
+        <a th:href="@{/admin/dashboard}"
+           th:classappend="${(#httpServletRequest != null ? #httpServletRequest.requestURI : '') == '/admin/dashboard'} ? 'active'"
+           class="nav-item">
+          <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+          </svg>
+          Dashboard
+        </a>
+        <div class="nav-section-label">Management</div>
+        <a th:href="@{/admin/users}"
+           th:classappend="${(#httpServletRequest != null ? #httpServletRequest.requestURI : '') == '/admin/users'} ? 'active'"
+           class="nav-item">
+          <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+          </svg>
+          Users
+        </a>
+        <a th:href="@{/admin/policies}"
+           th:classappend="${(#httpServletRequest != null ? #httpServletRequest.requestURI : '') == '/admin/policies'} ? 'active'"
+           class="nav-item">
+          <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+          Policies
+        </a>
+        <a th:href="@{/service/all}"
+           th:classappend="${(#httpServletRequest != null ? #httpServletRequest.requestURI : '').startsWith('/service')} ? 'active'"
+           class="nav-item">
+          <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+          </svg>
+          All Requests
+        </a>
+        <a th:href="@{/admin/reports}"
+           th:classappend="${(#httpServletRequest != null ? #httpServletRequest.requestURI : '') == '/admin/reports'} ? 'active'"
+           class="nav-item">
+          <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+          </svg>
+          Reports
+        </a>
+      </div>
+    </nav>
+
+    <!-- Logout -->
+    <div class="sidebar-footer">
+      <a th:href="@{/auth/logout}" class="logout-btn">
+        <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+        </svg>
+        Sign Out
+      </a>
+    </div>
+  </aside>
+
+  <!-- ══ TOP BAR ═══════════════════════════════════════════════════════════ -->
+  <header class="topbar">
+    <div class="topbar-title">
+      <span layout:fragment="page-title">AutoCare</span>
+      <span class="topbar-subtitle" layout:fragment="page-subtitle"></span>
+    </div>
+    <div class="topbar-actions">
+      <th:block layout:fragment="topbar-actions"></th:block>
+    </div>
+  </header>
+
+  <!-- ══ MAIN CONTENT ══════════════════════════════════════════════════════ -->
+  <main class="main-content">
+    <th:block layout:fragment="content"></th:block>
+  </main>
+
+</div><!-- end app-wrapper -->
+
+<!-- ── Global JS ─────────────────────────────────────────────────────────── -->
+<script>
+  // Auto-dismiss alerts after 5s
+  document.querySelectorAll('.alert').forEach(el => {
+    setTimeout(() => {
+      el.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+      el.style.opacity = '0';
+      el.style.transform = 'translateY(-8px)';
+      setTimeout(() => el.remove(), 400);
+    }, 5000);
+  });
+
+  // Count-up animation for stat values
+  document.querySelectorAll('.stat-value[data-count]').forEach(el => {
+    const target = parseInt(el.dataset.count);
+    const duration = 800;
+    const step = target / (duration / 16);
+    let current = 0;
+    const timer = setInterval(() => {
+      current += step;
+      if (current >= target) { current = target; clearInterval(timer); }
+      el.textContent = Math.floor(current);
+    }, 16);
+  });
+
+  // Staggered animation for table rows
+  document.querySelectorAll('tbody tr').forEach((row, i) => {
+    row.style.animation = `fadeInUp 0.35s ease ${i * 0.05}s both`;
+  });
+</script>
+
+<th:block layout:fragment="scripts"></th:block>
 </body>
 </html>
+

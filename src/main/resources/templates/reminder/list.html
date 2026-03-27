@@ -1,11 +1,91 @@
-﻿<!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>list</title>
-</head>
-<body>
-    <h1>list</h1>
-</body>
+<!-- ══ REMINDER LIST ══════════════════════════════════════════════════════ -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/base}">
+<th:block layout:fragment="page-title">Reminders</th:block>
+<th:block layout:fragment="page-subtitle">Maintenance alerts for all your vehicles</th:block>
+<th:block layout:fragment="content">
+
+  <!-- Filter tabs -->
+  <div class="filter-tabs animate-in">
+    <a th:href="@{/reminder/list}" class="filter-tab" th:classappend="${filter == null} ? 'active'">
+      All
+      <span class="filter-tab-count" th:text="${overdueCount + dueSoonCount + upcomingCount}"></span>
+    </a>
+    <a th:href="@{/reminder/list(filter='OVERDUE')}" class="filter-tab"
+       th:classappend="${filter == 'OVERDUE'} ? 'active'">
+      🔴 Overdue <span class="filter-tab-count" th:text="${overdueCount}"></span>
+    </a>
+    <a th:href="@{/reminder/list(filter='DUE_SOON')}" class="filter-tab"
+       th:classappend="${filter == 'DUE_SOON'} ? 'active'">
+      🟡 Due Soon <span class="filter-tab-count" th:text="${dueSoonCount}"></span>
+    </a>
+    <a th:href="@{/reminder/list(filter='UPCOMING')}" class="filter-tab"
+       th:classappend="${filter == 'UPCOMING'} ? 'active'">
+      🟢 Upcoming <span class="filter-tab-count" th:text="${upcomingCount}"></span>
+    </a>
+  </div>
+
+  <div th:if="${reminders.empty}" class="empty-state animate-in">
+    <span class="empty-icon">🔔</span>
+    <div class="empty-title">No reminders found</div>
+    <div class="empty-desc">Add a vehicle to automatically receive maintenance reminders.</div>
+  </div>
+
+  <div th:unless="${reminders.empty}" class="grid grid-2 animate-in animate-in-delay-1">
+    <div th:each="reminder : ${reminders}" class="card" style="padding:20px;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;">
+        <div>
+          <div style="font-family:'Playfair Display',serif;font-size:16px;font-weight:600;color:white;"
+               th:text="${reminder.vehicle.displayName}"></div>
+          <div class="vehicle-plate" style="font-size:11px;padding:2px 8px;margin-top:4px;"
+               th:text="${reminder.vehicle.licensePlate}"></div>
+        </div>
+        <span th:class="'badge ' + ${reminder.badgeClass}">
+          <span class="badge-dot"></span>
+          <span th:text="${reminder.urgencyLabel}"></span>
+        </span>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
+        <div style="padding:10px;background:var(--slate-900);border-radius:var(--radius-md);">
+          <div style="font-size:10px;color:var(--slate-500);text-transform:uppercase;letter-spacing:0.7px;">Due Date</div>
+          <div style="font-size:13.5px;color:var(--slate-100);margin-top:3px;font-weight:500;"
+               th:text="${#temporals.format(reminder.dueDate,'dd MMM yyyy')}"></div>
+        </div>
+        <div style="padding:10px;background:var(--slate-900);border-radius:var(--radius-md);">
+          <div style="font-size:10px;color:var(--slate-500);text-transform:uppercase;letter-spacing:0.7px;">Due Mileage</div>
+          <div style="font-size:13.5px;color:var(--slate-100);margin-top:3px;font-weight:500;"
+               th:text="${#numbers.formatDecimal(reminder.dueMileage,1,'COMMA',0,'POINT')} + ' km'"></div>
+        </div>
+      </div>
+
+      <div class="reminder-progress">
+        <div class="progress-label">
+          <span style="font-size:11px;color:var(--slate-500);"
+                th:text="'Policy: ' + ${reminder.policy.name}"></span>
+          <span style="font-size:11px;color:var(--slate-500);"
+                th:text="'Baseline: ' + ${#numbers.formatDecimal(reminder.baselineMileage,1,'COMMA',0,'POINT')} + ' km'"></span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill"
+               th:classappend="${reminder.state.name().toLowerCase().replace('_','-')}"
+               th:style="'width:' + ${reminder.state.name() == 'OVERDUE' ? 100 :
+                          reminder.state.name() == 'DUE_SOON' ? 75 : 35} + '%'">
+          </div>
+        </div>
+      </div>
+
+      <div th:if="${reminder.state.name() == 'OVERDUE' or reminder.state.name() == 'DUE_SOON'}"
+           style="margin-top:14px;">
+        <a th:href="@{/service/create}" class="btn btn-primary btn-sm w-full"
+           style="justify-content:center;">
+          Request Service →
+        </a>
+      </div>
+    </div>
+  </div>
+
+</th:block>
 </html>

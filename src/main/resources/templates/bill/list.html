@@ -1,0 +1,55 @@
+<!-- ══ BILL LIST ══════════════════════════════════════════════════════════ -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/base}">
+<th:block layout:fragment="page-title">Bills &amp; Payments</th:block>
+<th:block layout:fragment="page-subtitle">Your service billing history</th:block>
+<th:block layout:fragment="content">
+
+  <div th:if="${successMsg}" class="alert alert-success animate-in"><span th:text="${successMsg}"></span></div>
+
+  <div th:if="${totalUnpaid > 0}"
+       class="alert alert-warning animate-in" style="font-size:14px;">
+    <span class="alert-icon">⚠</span>
+    You have an outstanding balance of
+    <strong style="color:var(--amber-300);">
+      ₹<span th:text="${#numbers.formatDecimal(totalUnpaid,1,'COMMA',2,'POINT')}"></span>
+    </strong>
+  </div>
+
+  <div th:if="${bills.empty}" class="empty-state card animate-in">
+    <span class="empty-icon">📄</span>
+    <div class="empty-title">No bills yet</div>
+    <div class="empty-desc">Bills are generated automatically when a service is completed.</div>
+  </div>
+
+  <div th:unless="${bills.empty}" class="card animate-in animate-in-delay-1">
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr><th>#</th><th>Vehicle</th><th>Total</th><th>Generated</th><th>Status</th><th></th></tr>
+        </thead>
+        <tbody>
+          <tr th:each="bill : ${bills}">
+            <td class="text-muted" style="font-family:monospace;" th:text="'#' + ${bill.billId}"></td>
+            <td style="font-weight:500;color:white;" th:text="${bill.vehicleDisplayName}"></td>
+            <td>
+              <span style="font-family:'Playfair Display',serif;font-size:16px;color:var(--amber-400);">
+                ₹<span th:text="${#numbers.formatDecimal(bill.totalAmount,1,'COMMA',2,'POINT')}"></span>
+              </span>
+            </td>
+            <td th:text="${bill.generatedAt}" class="text-muted"></td>
+            <td>
+              <span th:if="${bill.paid}"  class="badge badge-success"><span class="badge-dot"></span>Paid</span>
+              <span th:unless="${bill.paid}" class="badge badge-warning"><span class="badge-dot"></span>Unpaid</span>
+            </td>
+            <td><a th:href="@{/bill/{id}(id=${bill.billId})}" class="btn btn-ghost btn-sm">View →</a></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</th:block>
+</html>
