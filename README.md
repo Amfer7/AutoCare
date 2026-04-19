@@ -1,4 +1,4 @@
-# 🚗 AutoCare — Smart Vehicle Maintenance & Reminder Management System
+# AutoCare — Smart Vehicle Maintenance & Reminder Management System
 
 > A full-stack Java web application built with Spring Boot that helps vehicle owners track maintenance schedules, receive automated reminders, manage service requests, and handle billing — all in one place.
 
